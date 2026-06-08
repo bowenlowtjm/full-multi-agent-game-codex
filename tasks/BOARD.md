@@ -13,7 +13,7 @@ One-file-per-task (not a single shared board) is deliberate: parallel role workt
 |----|-------|--------|-----------|-------|--------|
 | T001 | Run scaffold + baseline compile loop | done | M0 | orchestrator | chore/T001-scaffold |
 | T002 | PM backlog and milestone decomposition from AGENT-BRIEF+PRD | done | M0 | game-pm | feature/T002-pm-backlog |
-| T003 | Core loop foundations (state, spawning, gesture, scoring) | in-progress | M1 | game-logic | feature/T003-core-loop |
+| T003 | Core loop foundations (state, spawning, gesture, scoring) | done | M1 | game-logic | feature/T003-core-loop |
 | T004 | Scene + bootstrap flow (menu/game/pause/gameover wiring) | todo | M1 | unity-scene | feature/T004-scene-flow |
 | T005 | QA gate for M0 scaffold (compile/tests/ci preflight) | todo | M0 | qa | chore/T005-m0-qa |
 

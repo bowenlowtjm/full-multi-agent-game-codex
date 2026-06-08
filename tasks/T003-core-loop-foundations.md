@@ -1,7 +1,7 @@
 ---
 id: T003
 title: Core loop foundations (state, spawning, gesture, scoring)
-status: todo
+status: done
 milestone: M1
 owner: game-logic
 depends_on: [T002]

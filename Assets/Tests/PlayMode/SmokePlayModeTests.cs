@@ -1,23 +1,44 @@
 using System.Collections;
 using NUnit.Framework;
+using Pully.Game;
 using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Pully.Tests
 {
-    // Sample INTEGRATION (PlayMode) test — passes on a fresh scaffold so CI is
-    // green from commit 0. The agent replaces/extends this with real tests:
-    //   load the game scene, simulate touches via InputTestFixture, assert score
-    //   + combo update, lives/timer, game-over, and deterministic replay.
     public class SmokePlayModeTests
     {
         [UnityTest]
-        public IEnumerator GameObject_Survives_AFrame()
+        public IEnumerator Bootstrap_CreatesCoreSystems_AndHasGameplayState()
         {
-            var go = new GameObject("probe");
-            yield return null; // advance one frame in PlayMode
-            Assert.IsNotNull(go);
-            Object.Destroy(go);
+            var root = new GameObject("BootstrapRoot");
+            root.AddComponent<MenuBootstrap>();
+
+            yield return null;
+            yield return null;
+
+            var core = Object.FindFirstObjectByType<CoreLoopBootstrap>();
+            var score = Object.FindFirstObjectByType<ScoreManager>();
+            var state = Object.FindFirstObjectByType<GameStateManager>();
+            var spawner = Object.FindFirstObjectByType<SpawnerManager>();
+            var input = Object.FindFirstObjectByType<InputManager>();
+
+            Assert.IsNotNull(core);
+            Assert.IsNotNull(score);
+            Assert.IsNotNull(state);
+            Assert.IsNotNull(spawner);
+            Assert.IsNotNull(input);
+            Assert.AreEqual(GameState.GAMEPLAY, state.CurrentState);
+            Assert.AreEqual(3, score.Lives);
+
+            Object.Destroy(root);
+            if (core != null) Object.Destroy(core.gameObject);
+            if (score != null) Object.Destroy(score.gameObject);
+            if (state != null) Object.Destroy(state.gameObject);
+            if (spawner != null) Object.Destroy(spawner.gameObject);
+            if (input != null) Object.Destroy(input.gameObject);
+
+            yield return null;
         }
     }
 }

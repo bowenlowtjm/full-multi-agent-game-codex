@@ -18,8 +18,10 @@ namespace Pully.Game
         private float _elapsed;
 
         public IReadOnlyList<TargetRuntime> ActiveTargets => _active;
+        public RulesetDefinition Ruleset => ruleset;
 
-        public event Action<TargetRuntime, GestureType> OnGestureEvaluated;
+        public event Action<TargetRuntime, GestureType, bool> OnGestureEvaluated;
+        public event Action<TargetRuntime> OnTargetExpired;
 
         public void Configure(RulesetDefinition definition, Camera cam)
         {
@@ -88,19 +90,27 @@ namespace Pully.Game
         private void HandleExpired(TargetRuntime target)
         {
             _active.Remove(target);
+            OnTargetExpired?.Invoke(target);
         }
 
         public bool TryResolve(TargetRuntime target, GestureType gesture)
         {
             if (target == null) return false;
             bool success = target.rule.requiredGesture == (RulesetDefinition.Gesture)gesture;
-            OnGestureEvaluated?.Invoke(target, gesture);
+            OnGestureEvaluated?.Invoke(target, gesture, success);
             if (success)
             {
                 _active.Remove(target);
                 Destroy(target.gameObject);
             }
             return success;
+        }
+
+        public void RemoveTarget(TargetRuntime target)
+        {
+            if (target == null) return;
+            _active.Remove(target);
+            Destroy(target.gameObject);
         }
     }
 }
