@@ -13,6 +13,7 @@ namespace Pully.Game
         private readonly List<TargetRuntime> _active = new();
         private System.Random _rng;
         private Camera _cam;
+        private GameStateManager _state;
         private float _spawnInterval;
         private float _spawnTimer;
         private float _elapsed;
@@ -23,10 +24,11 @@ namespace Pully.Game
         public event Action<TargetRuntime, GestureType, bool> OnGestureEvaluated;
         public event Action<TargetRuntime> OnTargetExpired;
 
-        public void Configure(RulesetDefinition definition, Camera cam)
+        public void Configure(RulesetDefinition definition, Camera cam, GameStateManager state)
         {
             ruleset = definition;
             _cam = cam != null ? cam : Camera.main;
+            _state = state;
             _rng = new System.Random(ruleset.seed);
             _spawnInterval = ruleset.spawnIntervalStart;
             _spawnTimer = 0f;
@@ -36,6 +38,7 @@ namespace Pully.Game
         private void Update()
         {
             if (ruleset == null || _cam == null) return;
+            if (_state != null && _state.CurrentState != GameState.GAMEPLAY) return;
 
             _elapsed += Time.deltaTime;
             _spawnTimer += Time.deltaTime;

@@ -14,10 +14,12 @@ namespace Pully.Game
 
         private Camera _camera;
         private SpawnerManager _spawner;
+        private GameStateManager _state;
 
-        public void Configure(SpawnerManager spawner)
+        public void Configure(SpawnerManager spawner, GameStateManager state)
         {
             _spawner = spawner;
+            _state = state;
             _camera = Camera.main;
             if (_camera == null)
             {
@@ -32,6 +34,7 @@ namespace Pully.Game
         private void Update()
         {
             if (_spawner == null || _camera == null) return;
+            if (_state != null && _state.CurrentState != GameState.GAMEPLAY) return;
 
             if (Input.touchCount > 0)
             {

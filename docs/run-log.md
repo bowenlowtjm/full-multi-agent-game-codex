@@ -26,3 +26,4 @@ Self-report (honest): <what's done / stubbed / known issues>
 - 2026-06-09 00:08 — QA plan established in docs/QA-PLAN.md (M0-M4 gates, artifact evidence matrix, compile/tests/build checklist, fail-honest template).
 - 2026-06-09 00:13 — Committed and pushed M0 scaffold baseline to `main` (`5ad4e58`): templates + Unity project init + local task board + PM/art/QA setup docs + first core-loop script slice.
 - 2026-06-09 00:22 — Completed T003 core-loop foundation pass: added runtime state/score/spawn/input/HUD bootstrap scripts, upgraded EditMode/PlayMode tests, and verified headless compile CLEAN + Editor.log Tundra success (commit pending).
+- 2026-06-09 00:30 — Completed T004 scene/bootstrap flow pass: added SceneFlowController and gameplay start/pause/resume wiring via MenuBootstrap + CoreLoopBootstrap methods; compile verified CLEAN (commit pending).

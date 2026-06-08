@@ -26,16 +26,31 @@ namespace Pully.Game
             _input = gameObject.AddComponent<InputManager>();
 
             _score.Configure(ruleset);
-            _spawner.Configure(ruleset, Camera.main);
-            _input.Configure(_spawner);
+            _spawner.Configure(ruleset, Camera.main, _state);
+            _input.Configure(_spawner, _state);
         }
 
         private void Start()
         {
-            _state.StartRound(ruleset.roundSeconds);
             _state.OnRoundEnded += () => Debug.Log($"[CoreLoop] Round ended. score={_score.Score}, lives={_score.Lives}");
             _spawner.OnGestureEvaluated += OnGestureEvaluated;
             _spawner.OnTargetExpired += _ => OnFailure();
+        }
+
+        public void BeginGameplay()
+        {
+            _score.ResetSession();
+            _state.StartRound(ruleset.roundSeconds);
+        }
+
+        public void PauseGameplay()
+        {
+            _state.SetState(GameState.PAUSE);
+        }
+
+        public void ResumeGameplay()
+        {
+            _state.SetState(GameState.GAMEPLAY);
         }
 
         private void OnGestureEvaluated(TargetRuntime target, GestureType gesture, bool success)

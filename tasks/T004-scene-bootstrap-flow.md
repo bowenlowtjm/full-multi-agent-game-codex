@@ -1,7 +1,7 @@
 ---
 id: T004
 title: Scene + bootstrap flow (menu/game/pause/gameover wiring)
-status: todo
+status: done
 milestone: M1
 owner: unity-scene
 depends_on: [T002]
