@@ -1,0 +1,30 @@
+# CONVENTIONS.md
+
+Read before writing code. Keep edits consistent with these. **Canonical source:** `$SPEC_REPO/roles/code-conventions.SKILL.md` (enforced by the **Staff Engineer** before every major commit); this file is the run-repo quick reference.
+
+## Project
+- Unity 6 LTS, 3D project, 2D-sprite gameplay (ortho/shallow-perspective camera), portrait.
+- All game content under `Assets/_Game/` (`Scripts/`, `Scenes/`, `Sprites/`, `Data/`).
+- One assembly definition: `Pully.Game` (namespace `Pully.Game`).
+- Tests under `Assets/Tests/` — `Pully.Tests.EditMode` (unit), `Pully.Tests.PlayMode` (integration). Add tests with each feature; keep core logic pure for EditMode coverage.
+
+## Code
+- C#, current Unity conventions; PascalCase types/methods, camelCase fields.
+- Ruleset values come from the `RulesetDefinition` SO — never hardcode the mapping or thresholds.
+- Seed all RNG from the ruleset `seed`; gameplay must be deterministic per seed.
+- Input via the new Input System; support touch + mouse (Editor).
+
+## Verify loop
+- After each C# edit, run `scripts/unity-check.sh` → must be CLEAN before proceeding (headless; no Editor focus needed). Editor tools live in `Pully.EditorTools` (no game ref) so they run even when game code is broken.
+- `PULLY_REFRESH_PORT` must be unique per parallel run.
+
+## Build & assets
+- Build only via `Editor/Builder.cs` batchmode; APK → `Builds/Android/pully.apk`.
+- Sprites go through the Game Art atlas; correct import settings (PPU, point filter for pixel art).
+- Commit `.meta` files; never delete them by hand.
+
+## Process
+- Branch per task (`feature/T###-…`); PR links `T###` (`tasks/`); **merge only when `ci.yml` is green**.
+- `build.yml` (on `main`) produces the APK artifact; `Editor/Builder.cs` is for local batchmode only — never pass it as GameCI `buildMethod`.
+- Append `run-log.md` + post Discord (incl. CI status) on every significant change.
+- Log decisions in `docs/decisions.md`; at milestone checkpoints / major architectural forks, promote significant ones to formal ADRs in `adr/` (`$SPEC_REPO/12-ADR-Process.md`).
