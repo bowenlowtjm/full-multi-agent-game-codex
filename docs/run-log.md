@@ -24,3 +24,4 @@ Self-report (honest): <what's done / stubbed / known issues>
 - 2026-06-09 00:07 — Patched `scripts/unity-check.sh` with Unity 6 batch fallback when `AutoRefresher` executeMethod is unavailable; verification returned CLEAN (Task T001, commit pending).
 - 2026-06-09 00:08 — Seeded local Config B task board (`T001`..`T005`) and filled `DESIGN.md` defaults for Critters/flat-vector style (Task T002, commit pending).
 - 2026-06-09 00:08 — QA plan established in docs/QA-PLAN.md (M0-M4 gates, artifact evidence matrix, compile/tests/build checklist, fail-honest template).
+- 2026-06-09 00:13 — Committed and pushed M0 scaffold baseline to `main` (`5ad4e58`): templates + Unity project init + local task board + PM/art/QA setup docs + first core-loop script slice.
