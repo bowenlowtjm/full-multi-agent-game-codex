@@ -52,6 +52,7 @@ namespace Pully.Game
             PlayerPrefs.SetInt("pully.colorblind", _colorblind ? 1 : 0);
             PlayerPrefs.Save();
             if (AudioManager.Instance != null) AudioManager.Instance.ApplyPrefs();
+            if (HapticsManager.Instance != null) HapticsManager.Instance.SetEnabled(_haptics);
         }
     }
 }
