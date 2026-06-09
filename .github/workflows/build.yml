@@ -1,21 +1,42 @@
 name: Build (Android APK)
 
 # Builds the debug Android APK on merge to main (and on demand).
-# Uses GameCI's built-in builder (NOT Editor/Builder.cs — that one calls
-# EditorApplication.Exit and is for local batchmode only).
-# Requires Unity license secrets: UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
+# Produces an APK artifact for testing.
+#
+# Required secrets:
+#   UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD
+#
+# Note: Uses GameCI's unity-builder (NOT local Editor/Builder.cs which exits the process).
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      buildType:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+concurrency:
+  group: build-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  UNITY_VERSION: ${{ vars.UNITY_VERSION || '6000.4.10f1' }}
+  PROJECT_PATH: .
 
 jobs:
   build-android:
-    name: Android debug build
+    name: Android ${{ github.event.inputs.buildType || 'debug' }} build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           lfs: true
 
@@ -23,24 +44,43 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-Android-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
+            Library-Android-${{ env.UNITY_VERSION }}-
             Library-Android-
-            Library-
 
-      - name: Build Android
+      - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
+          unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: Android
           androidExportType: androidPackage    # .apk (use 'androidAppBundle' for .aab)
+          androidTargetSdkVersion: 34
+          androidAppBundle: false
+          buildName: pully
+          buildMethod: ''  # Use GameCI default build method
+          customParameters: |
+            -buildTarget Android
+            -development ${{ github.event.inputs.buildType == 'debug' && 'true' || 'false' }}
 
-      - name: Upload APK artifact
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pully-android
-          path: build/Android
+          name: pully-android-${{ github.sha }}-${{ github.event.inputs.buildType || 'debug' }}
+          path: build/Android/*.apk
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Build Summary
+        run: |
+          echo "## Android Build Success" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Build Type: ${{ github.event.inputs.buildType || 'debug' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unity Version: ${{ env.UNITY_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the APK from the artifacts section." >> $GITHUB_STEP_SUMMARY
