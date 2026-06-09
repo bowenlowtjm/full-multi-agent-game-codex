@@ -3,11 +3,21 @@
 Scope: planning only. No binary assets generated in this phase.
 
 Inputs aligned:
-- `DESIGN.md` (Critters theme, flat-vector style, locked palette, readability rules, 100 PPU)
+- `DESIGN.md` (Critters theme, Flappy-Bird-like 2D style, updated bright palette, readability rules, 100 PPU)
 - `spec/GAME-SPEC.md` (M2 placeholders -> generated sprites + atlas, M4 release polish)
 - `spec/RULESET.md` (5 shape/color gameplay targets)
 - `spec/ACCEPTANCE.md` (gates and verification artifacts)
 - `08-Roadmap.md` + `RUN-PROTOCOL.md` (M2/M3/M4 milestone expectations)
+
+## Art direction update (user-requested)
+- Visual target: Flappy-Bird-like look and feel.
+- Practical interpretation for Pully:
+  - bright sky-forward backgrounds
+  - simple, chunky cartoon shapes
+  - bold dark outlines and high silhouette readability
+  - restrained shading (minimal gradients)
+  - playful bounce/tween motion emphasis over complex rendering
+- Constraint: retain Pully’s gesture readability and silhouette-first target identity.
 
 ## 1) Asset list by milestone (M2-M4)
 

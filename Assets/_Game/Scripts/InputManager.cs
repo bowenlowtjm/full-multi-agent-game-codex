@@ -11,6 +11,7 @@ namespace Pully.Game
         private readonly Dictionary<int, TouchData> _activeTouches = new();
         private readonly Dictionary<int, float> _lastTapTimes = new();
         private readonly Dictionary<int, Vector2> _lastTapPositions = new();
+        private readonly Dictionary<int, TargetRuntime> _lastTapTargets = new();
 
         private Camera _camera;
         private SpawnerManager _spawner;
@@ -36,16 +37,23 @@ namespace Pully.Game
             if (_spawner == null || _camera == null) return;
             if (_state != null && _state.CurrentState != GameState.GAMEPLAY) return;
 
-            if (Input.touchCount > 0)
+            try
             {
-                for (int i = 0; i < Input.touchCount; i++)
+                if (Input.touchCount > 0)
                 {
-                    ProcessTouch(Input.GetTouch(i));
+                    for (int i = 0; i < Input.touchCount; i++)
+                    {
+                        ProcessTouch(Input.GetTouch(i));
+                    }
+                }
+                else
+                {
+                    ProcessMouse();
                 }
             }
-            else
+            catch (System.Exception ex)
             {
-                ProcessMouse();
+                Debug.LogError($"[InputManager] Exception in Update: {ex}");
             }
         }
 
@@ -83,9 +91,11 @@ namespace Pully.Game
             bool isDoubleTap = false;
 
             if (_lastTapTimes.TryGetValue(fingerId, out float lastTime) &&
-                _lastTapPositions.TryGetValue(fingerId, out Vector2 lastPos))
+                _lastTapPositions.TryGetValue(fingerId, out Vector2 lastPos) &&
+                _lastTapTargets.TryGetValue(fingerId, out var lastTarget))
             {
-                if (Time.time - lastTime <= doubleTapInterval && Vector2.Distance(lastPos, screenPos) <= dragThreshold * 2f)
+                bool sameTarget = lastTarget != null && target != null && lastTarget == target;
+                if (sameTarget && Time.time - lastTime <= doubleTapInterval && Vector2.Distance(lastPos, screenPos) <= dragThreshold * 2f)
                 {
                     isDoubleTap = true;
                 }
@@ -102,19 +112,19 @@ namespace Pully.Game
                 isDoubleTap = isDoubleTap
             };
 
+            Debug.Log($"[InputManager] Began id={fingerId} target={(target ? target.name : "null")} double={isDoubleTap} pos={screenPos}");
+
             if (!isDoubleTap)
             {
                 _lastTapTimes[fingerId] = Time.time;
                 _lastTapPositions[fingerId] = screenPos;
+                _lastTapTargets[fingerId] = target;
             }
             else
             {
                 _lastTapTimes.Remove(fingerId);
                 _lastTapPositions.Remove(fingerId);
-                if (target != null)
-                {
-                    _spawner.TryResolve(target, GestureType.DoubleTap);
-                }
+                _lastTapTargets.Remove(fingerId);
             }
         }
 
@@ -141,30 +151,40 @@ namespace Pully.Game
         private void OnTouchEnded(int fingerId, Vector2 screenPos)
         {
             if (!_activeTouches.TryGetValue(fingerId, out var data)) return;
+            _activeTouches.Remove(fingerId);
 
-            if (data.target != null)
+            if (_spawner == null || _spawner.Ruleset == null) return;
+            if (data.target == null) return;
+
+            // Target may have been destroyed by a previous tap in the double-tap pair.
+            if (!data.target || data.target.gameObject == null) return;
+
+            var duration = Time.time - data.startTime;
+            var moved = Vector2.Distance(data.startPos, screenPos);
+
+            if (data.isDoubleTap)
             {
-                var duration = Time.time - data.startTime;
-                var moved = Vector2.Distance(data.startPos, screenPos);
-
-                if (!data.isDoubleTap)
+                bool needsDouble = (RulesetDefinition.Gesture)GestureType.DoubleTap == data.target.rule.requiredGesture;
+                Debug.Log($"[InputManager] End id={fingerId} DOUBLE target={data.target.name} needsDouble={needsDouble}");
+                if (needsDouble)
                 {
-                    if (data.isDragging)
-                    {
-                        _spawner.TryResolve(data.target, GestureType.SwipeTap);
-                    }
-                    else if (duration >= _spawner.Ruleset.longPressDuration)
-                    {
-                        _spawner.TryResolve(data.target, GestureType.LongPress);
-                    }
-                    else if (duration <= _spawner.Ruleset.doubleTapWindow && moved <= dragThreshold)
-                    {
-                        _spawner.TryResolve(data.target, GestureType.SingleTap);
-                    }
+                    _spawner.TryResolve(data.target, GestureType.DoubleTap);
                 }
+                return;
             }
 
-            _activeTouches.Remove(fingerId);
+            if (data.isDragging)
+            {
+                _spawner.TryResolve(data.target, GestureType.SwipeTap);
+            }
+            else if (duration >= _spawner.Ruleset.longPressDuration)
+            {
+                _spawner.TryResolve(data.target, GestureType.LongPress);
+            }
+            else if (duration <= _spawner.Ruleset.doubleTapWindow && moved <= dragThreshold)
+            {
+                _spawner.TryResolve(data.target, GestureType.SingleTap);
+            }
         }
 
         private TargetRuntime RaycastTarget(Vector2 screenPos)

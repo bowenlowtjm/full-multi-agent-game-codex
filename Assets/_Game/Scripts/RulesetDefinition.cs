@@ -32,7 +32,7 @@ namespace Pully.Game
         public float comboCap = 5f;
 
         [Header("Round / session")]
-        public int lives = 3;
+        public int lives = 10;
         public float roundSeconds = 60f;
         public float targetLifetime = 1.6f;
         public float spawnIntervalStart = 1.2f;

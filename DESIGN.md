@@ -8,20 +8,20 @@ The Game Art agent reads this before generating and updates it as the style lock
 - **Reference games for *feel*** (see `spec/GAME-SPEC.md`): Bop It (action-on-cue), Fruit Ninja (swipe juice), Piano Tiles/Beatstar (tension), Whack-a-Mole (pop feedback).
 
 ## Art style
-- **Style:** flat-vector (from run defaults for this L3 run).
-- **Mood:** playful, high-contrast, fast-read arcade.
-- **Pixels-per-unit / resolution target:** 100 PPU for gameplay sprites and UI icons.
+- **Style:** Flappy-Bird-like 2D arcade style (clean cartoon silhouettes, bold outlines, simple shapes, bright palette).
+- **Mood:** cheerful, bouncy, highly legible, retro-mobile arcade.
+- **Pixels-per-unit / resolution target:** 100 PPU for gameplay sprites and UI icons; crisp edges and strong silhouette readability.
 
 ## Palette (lock these hex values)
 | Role | Hex | Used for |
 |------|-----|----------|
-| Background | #1B1F3B | play-field |
-| Accent / UI | #FF8C42 | buttons, HUD |
-| Circle-Green target | #5CD65C | single-tap |
-| Circle-Red target | #FF4B5C | long-press trap |
-| Square-Blue target | #4A90E2 | double-tap |
-| Triangle-Yellow target | #FFD166 | swipe-tap |
-| Star-Purple target | #9B5DE5 | two-finger |
+| Background | #70C5CE | play-field sky tone |
+| Accent / UI | #F7E26B | buttons, HUD highlights |
+| Circle-Green target | #7ED957 | single-tap |
+| Circle-Red target | #FF5A5F | long-press trap |
+| Square-Blue target | #4D96FF | double-tap |
+| Triangle-Yellow target | #FFD93D | swipe-tap |
+| Star-Purple target | #A66CFF | two-finger |
 
 ## Readability rules (these are scored — see spec/ACCEPTANCE.md)
 - Each shape distinguishable by **silhouette AND color** — never color alone (red/green colorblind safe).
@@ -29,10 +29,11 @@ The Game Art agent reads this before generating and updates it as the style lock
 - HUD legible over the busiest play-field state.
 
 ## Asset inventory (check off as produced)
-- [ ] 5 target sprites (one per shape/color in spec/RULESET.md)
-- [ ] Hit-pop FX, miss-flash FX
-- [ ] UI: Play / Retry / Menu buttons, HUD frame
+- [x] 5 target fallback sprites (procedural per shape/color ruleset in runtime)
+- [x] Hit/miss feedback pass (audio + haptics + score toast UI)
+- [x] UI polish pass: menu/game controls + HUD skin updated to Flappy-style palette
 - [ ] Packed atlas (no import warnings)
 
 ## Decisions log (style)
 - 2026-06-09 — Selected Critters + flat-vector to maximize mobile readability and unblock early gameplay while art agent iterates atlas assets.
+- 2026-06-09 — User requested Flappy-Bird-like art direction; updated style/mood/palette to bright sky, bold outlines, simple cartoon readability.

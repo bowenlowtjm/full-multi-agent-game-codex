@@ -32,7 +32,7 @@ namespace Pully.Tests
             var go = new GameObject("score");
             var mgr = go.AddComponent<ScoreManager>();
             var ruleset = ScriptableObject.CreateInstance<RulesetDefinition>();
-            ruleset.lives = 3;
+            ruleset.lives = 10;
             ruleset.comboStep = 1.1f;
             ruleset.comboCap = 5f;
             mgr.Configure(ruleset);

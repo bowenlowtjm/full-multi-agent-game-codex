@@ -72,24 +72,31 @@ namespace Pully.Game
         {
             if (_state == null || _core == null) return;
 
+            // High-priority controls (drawn before gameplay hit-testing)
             if (_state.CurrentState == GameState.GAMEPLAY)
             {
-                if (GUI.Button(new Rect(Screen.width - 140, 20, 120, 40), "Pause"))
+                if (GUI.Button(new Rect(Screen.width - 190, 16, 170, 58), "Pause", UISkin.ButtonStyle))
                 {
                     _core.PauseGameplay();
+                    return;
                 }
             }
             else if (_state.CurrentState == GameState.PAUSE)
             {
-                if (GUI.Button(new Rect(Screen.width - 140, 20, 120, 40), "Resume"))
+                if (GUI.Button(new Rect(Screen.width - 190, 16, 170, 58), "Resume", UISkin.ButtonStyle))
                 {
                     _core.ResumeGameplay();
+                    return;
                 }
-                if (GUI.Button(new Rect(Screen.width - 140, 70, 120, 40), "Menu"))
+
+                if (GUI.Button(new Rect(Screen.width - 190, 84, 170, 58), "Menu", UISkin.ButtonStyle))
                 {
                     SceneManager.LoadScene(SceneNames.Menu);
+                    return;
                 }
             }
+
+            GUI.Label(new Rect(Screen.width - 190, 148, 170, 32), _state.CurrentState.ToString(), UISkin.ChipStyle);
         }
     }
 }

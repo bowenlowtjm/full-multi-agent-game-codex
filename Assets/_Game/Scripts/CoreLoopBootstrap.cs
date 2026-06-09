@@ -91,25 +91,34 @@ namespace Pully.Game
 
         private static void EnsureMainCamera()
         {
-            if (Camera.main != null) return;
-            var go = new GameObject("Main Camera");
-            var cam = go.AddComponent<Camera>();
-            go.tag = "MainCamera";
-            cam.orthographic = true;
-            cam.transform.position = new Vector3(0f, 0f, -10f);
+            Camera cam = Camera.main;
+            if (cam == null)
+            {
+                var go = new GameObject("Main Camera");
+                go.tag = "MainCamera";
+                cam = go.AddComponent<Camera>();
+                cam.orthographic = true;
+                cam.transform.position = new Vector3(0f, 0f, -10f);
+            }
+
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.11f, 0.12f, 0.23f);
+            cam.backgroundColor = new Color(112f / 255f, 197f / 255f, 206f / 255f); // #70C5CE sky tone
+
+            if (cam.GetComponent<AudioListener>() == null)
+            {
+                cam.gameObject.AddComponent<AudioListener>();
+            }
         }
 
         private static RulesetDefinition BuildDefaultRuleset()
         {
             var rs = ScriptableObject.CreateInstance<RulesetDefinition>();
             rs.rules.Clear();
-            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Circle, color = Color.green, requiredGesture = RulesetDefinition.Gesture.SingleTap, baseReward = 1 });
-            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Circle, color = Color.red, requiredGesture = RulesetDefinition.Gesture.LongPress, baseReward = 5 });
-            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Square, color = Color.blue, requiredGesture = RulesetDefinition.Gesture.DoubleTap, baseReward = 3 });
-            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Triangle, color = Color.yellow, requiredGesture = RulesetDefinition.Gesture.SwipeTap, baseReward = 5 });
-            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Star, color = new Color(0.61f, 0.36f, 0.9f), requiredGesture = RulesetDefinition.Gesture.TwoFingerTap, baseReward = 8 });
+            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Circle, color = new Color(126f / 255f, 217f / 255f, 87f / 255f), requiredGesture = RulesetDefinition.Gesture.SingleTap, baseReward = 1 });    // #7ED957
+            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Circle, color = new Color(1f, 90f / 255f, 95f / 255f), requiredGesture = RulesetDefinition.Gesture.LongPress, baseReward = 5 });          // #FF5A5F
+            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Square, color = new Color(77f / 255f, 150f / 255f, 1f), requiredGesture = RulesetDefinition.Gesture.DoubleTap, baseReward = 3 });      // #4D96FF
+            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Triangle, color = new Color(1f, 217f / 255f, 61f / 255f), requiredGesture = RulesetDefinition.Gesture.SwipeTap, baseReward = 5 });    // #FFD93D
+            rs.rules.Add(new RulesetDefinition.TargetRule { shape = RulesetDefinition.Shape.Star, color = new Color(166f / 255f, 108f / 255f, 1f), requiredGesture = RulesetDefinition.Gesture.TwoFingerTap, baseReward = 8 });    // #A66CFF
             return rs;
         }
     }

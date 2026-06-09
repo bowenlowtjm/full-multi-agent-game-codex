@@ -7,22 +7,19 @@ namespace Pully.Game
     {
         private void OnGUI()
         {
-            GUIStyle h = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter };
-            GUIStyle s = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
+            UISkin.DrawBackground();
+            var card = UISkin.DrawCard(top: 90f, minHeight: 320f);
 
-            GUI.Label(new Rect(0, 40, Screen.width, 60), "Game Over", h);
-            GUI.Label(new Rect(0, 120, Screen.width, 50), $"Score: {SessionData.LastScore}", s);
-            GUI.Label(new Rect(0, 165, Screen.width, 50), $"Best: {PlayerPrefs.GetInt("pully.highscore", 0)}", s);
+            GUI.Label(new Rect(0, 34, Screen.width, 58), "Game Over", UISkin.TitleStyle);
+            GUI.Label(new Rect(0, card.y + 56, Screen.width, 42), $"Score: {SessionData.LastScore}", UISkin.SubtitleStyle);
+            GUI.Label(new Rect(0, card.y + 102, Screen.width, 36), $"Best: {PlayerPrefs.GetInt("pully.highscore", 0)}", UISkin.ChipStyle);
 
-            int cx = Screen.width / 2 - 110;
-            if (GUI.Button(new Rect(cx, 250, 220, 50), "Retry"))
-            {
+            int cx = Screen.width / 2 - 130;
+            if (GUI.Button(new Rect(cx, (int)card.y + 168, 260, 56), "Retry", UISkin.ButtonStyle))
                 SceneManager.LoadScene(SceneNames.Game);
-            }
-            if (GUI.Button(new Rect(cx, 315, 220, 50), "Menu"))
-            {
+
+            if (GUI.Button(new Rect(cx, (int)card.y + 236, 260, 56), "Menu", UISkin.ButtonStyle))
                 SceneManager.LoadScene(SceneNames.Menu);
-            }
         }
     }
 }

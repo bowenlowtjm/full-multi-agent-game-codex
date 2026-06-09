@@ -98,8 +98,9 @@ namespace Pully.Game
 
         public bool TryResolve(TargetRuntime target, GestureType gesture)
         {
-            if (target == null) return false;
+            if (target == null || !target || target.gameObject == null) return false;
             bool success = target.rule.requiredGesture == (RulesetDefinition.Gesture)gesture;
+            Debug.Log($"[Spawner] TryResolve target={target.name} required={target.rule.requiredGesture} gesture={gesture} success={success}");
             OnGestureEvaluated?.Invoke(target, gesture, success);
             if (success)
             {

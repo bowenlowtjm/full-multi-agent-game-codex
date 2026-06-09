@@ -18,10 +18,12 @@ namespace Pully.Game
 
         private void OnGUI()
         {
-            GUIStyle s = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter };
-            GUI.Label(new Rect(0, Screen.height / 2 - 60, Screen.width, 60), "PULLY", s);
-            GUIStyle t = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter };
-            GUI.Label(new Rect(0, Screen.height / 2 + 10, Screen.width, 40), "loading...", t);
+            UISkin.DrawBackground();
+            UISkin.DrawCard(top: Screen.height * 0.28f, minHeight: Screen.height * 0.36f);
+
+            GUI.Label(new Rect(0, Screen.height / 2f - 78f, Screen.width, 60f), "PULLY", UISkin.TitleStyle);
+            GUI.Label(new Rect(0, Screen.height / 2f - 18f, Screen.width, 38f), "Gesture arcade", UISkin.SubtitleStyle);
+            GUI.Label(new Rect(0, Screen.height / 2f + 28f, Screen.width, 30f), "loading...", UISkin.ChipStyle);
         }
     }
 }

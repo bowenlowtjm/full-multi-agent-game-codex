@@ -7,20 +7,26 @@ namespace Pully.Game
     {
         private void OnGUI()
         {
-            GUIStyle h = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleCenter };
-            GUI.Label(new Rect(0, 40, Screen.width, 60), "Pully", h);
+            UISkin.DrawBackground();
+            var card = UISkin.DrawCard();
 
-            int centerX = Screen.width / 2 - 110;
-            int y = 160;
-            if (GUI.Button(new Rect(centerX, y, 220, 50), "Play")) SceneManager.LoadScene(SceneNames.Game);
-            y += 65;
-            if (GUI.Button(new Rect(centerX, y, 220, 50), "Settings")) SceneManager.LoadScene(SceneNames.Settings);
-            y += 65;
-            if (GUI.Button(new Rect(centerX, y, 220, 50), "How To Play")) SceneManager.LoadScene(SceneNames.Tutorial);
+            GUI.Label(new Rect(0, 24, Screen.width, 58), "PULLY", UISkin.TitleStyle);
+            GUI.Label(new Rect(0, 74, Screen.width, 38), "Flappy-style gesture arcade", UISkin.ChipStyle);
 
-            GUIStyle s = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
+            int centerX = Screen.width / 2 - 130;
+            int y = (int)card.y + 80;
+
+            if (GUI.Button(new Rect(centerX, y, 260, 56), "Play", UISkin.ButtonStyle))
+                SceneManager.LoadScene(SceneNames.Game);
+            y += 70;
+            if (GUI.Button(new Rect(centerX, y, 260, 56), "How To Play", UISkin.ButtonStyle))
+                SceneManager.LoadScene(SceneNames.Tutorial);
+            y += 70;
+            if (GUI.Button(new Rect(centerX, y, 260, 56), "Settings", UISkin.ButtonStyle))
+                SceneManager.LoadScene(SceneNames.Settings);
+
             int best = PlayerPrefs.GetInt("pully.highscore", 0);
-            GUI.Label(new Rect(0, Screen.height - 70, Screen.width, 40), $"Best: {best}", s);
+            GUI.Label(new Rect(0, Screen.height - 58, Screen.width, 32), $"Best: {best}", UISkin.ChipStyle);
         }
     }
 }

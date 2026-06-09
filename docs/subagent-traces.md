@@ -199,3 +199,52 @@ Verification/evidence
 
 Result
 - PASS: targets now render with a guaranteed visible sprite even before final art atlas replacement.
+
+## 2026-06-09 10:12 — Art Direction Lock (orchestrator)
+Role
+- game-art (delegated via orchestrator docs updates)
+
+Goal
+- Align run art direction with latest user preference: Flappy-Bird-like style.
+
+Actions
+- Updated `DESIGN.md` art style, mood, and palette values to a brighter sky-forward arcade look.
+- Added explicit art-direction section to `docs/art-plan.md` with practical constraints for silhouette/readability.
+- Recorded user preference in profile memory.
+
+Files written/updated
+- DESIGN.md
+- docs/art-plan.md
+
+Verification/evidence
+- File diffs include style/mood/palette changes and new art-direction constraints section.
+
+Result
+- PASS: art direction is now explicitly Flappy-Bird-like for ongoing asset replacement.
+
+## 2026-06-09 10:14 — T005 M0 QA Gate Closeout (orchestrator)
+Role
+- qa (executed by orchestrator with artifact capture)
+
+Goal
+- Close T005 with concrete evidence and sync board/task docs.
+
+Actions
+- Verified CI workflow presence in `.github/workflows`.
+- Ran compile gate with Unity 6000.4.10f1 after resolving concurrent project-open conflict.
+- Confirmed no script compiler errors in `Logs/compile.log`.
+- Confirmed `com.unity.test-framework` and test asmdef references are present.
+- Updated `tasks/T005-m0-qa-gate.md` acceptance checklist and artifact evidence section.
+
+Files written/updated
+- tasks/T005-m0-qa-gate.md
+- docs/run-log.md
+- docs/subagent-traces.md
+
+Verification/evidence
+- `UNITY_BIN=... ./scripts/unity-check.sh` => `[unity-check] CLEAN`.
+- `Packages/manifest.json` includes test framework package.
+- `Assets/Tests/*/*.asmdef` references `UnityEngine.TestRunner` + `nunit.framework.dll`.
+
+Result
+- PASS: M0 QA gate completed with artifact-backed checks.

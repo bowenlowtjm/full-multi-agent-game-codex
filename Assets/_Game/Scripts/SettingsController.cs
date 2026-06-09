@@ -22,21 +22,24 @@ namespace Pully.Game
 
         private void OnGUI()
         {
-            GUIStyle h = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter };
-            GUI.Label(new Rect(0, 30, Screen.width, 50), "Settings", h);
+            UISkin.DrawBackground();
+            var card = UISkin.DrawCard();
+            GUI.Label(new Rect(0, 24, Screen.width, 58), "Settings", UISkin.TitleStyle);
 
-            GUILayout.BeginArea(new Rect(30, 110, Screen.width - 60, Screen.height - 180));
-            GUILayout.Label($"Music: {_music:0.00}");
+            GUILayout.BeginArea(new Rect(card.x + 24, card.y + 30, card.width - 48, card.height - 60));
+            GUILayout.Label($"Music: {_music:0.00}", UISkin.BodyStyle);
             _music = GUILayout.HorizontalSlider(_music, 0f, 1f);
-            GUILayout.Label($"SFX: {_sfx:0.00}");
+            GUILayout.Label($"SFX: {_sfx:0.00}", UISkin.BodyStyle);
             _sfx = GUILayout.HorizontalSlider(_sfx, 0f, 1f);
+
             _mute = GUILayout.Toggle(_mute, "Mute");
             _haptics = GUILayout.Toggle(_haptics, "Haptics");
             _colorblind = GUILayout.Toggle(_colorblind, "Colorblind mode");
 
-            if (GUILayout.Button("Save")) Save();
-            if (GUILayout.Button("Replay tutorial")) SceneManager.LoadScene(SceneNames.Tutorial);
-            if (GUILayout.Button("Back")) SceneManager.LoadScene(SceneNames.Menu);
+            GUILayout.Space(16);
+            if (GUILayout.Button("Save", UISkin.ButtonStyle)) Save();
+            if (GUILayout.Button("Replay tutorial", UISkin.ButtonStyle)) SceneManager.LoadScene(SceneNames.Tutorial);
+            if (GUILayout.Button("Back", UISkin.ButtonStyle)) SceneManager.LoadScene(SceneNames.Menu);
             GUILayout.EndArea();
         }
 
