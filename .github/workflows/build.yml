@@ -64,7 +64,6 @@ jobs:
           buildName: pully
           buildMethod: ''  # Use GameCI default build method
           customParameters: |
-            -buildTarget Android
             -development ${{ github.event.inputs.buildType == 'debug' && 'true' || 'false' }}
 
       - name: Upload APK Artifact
