@@ -35,6 +35,12 @@ namespace Pully.Game
                 _state.OnStateChanged += OnStateChanged;
             }
 
+            if (FindFirstObjectByType<AudioManager>() == null)
+            {
+                var audioRoot = new GameObject("AudioManager");
+                audioRoot.AddComponent<AudioManager>();
+            }
+
             _core.BeginGameplay();
         }
 

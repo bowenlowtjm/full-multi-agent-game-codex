@@ -142,3 +142,34 @@ Verification/evidence
 
 Result
 - PASS: full scene flow assets are now present and wired for testing/build.
+
+---
+
+## 2026-06-09 09:05–09:13 — game-logic role execution trace (orchestrator-led)
+Goal
+- Complete M2 settings persistence and runtime feedback plumbing (audio/haptics) with minimal intervention.
+
+Actions
+- Added runtime AudioManager singleton with PlayerPrefs-driven mute/music/sfx application.
+- Added HapticsManager static helper honoring `pully.haptics` toggle.
+- Wired AudioManager bootstrap in GameSceneController.
+- Wired hit/miss audio+haptic calls in CoreLoopBootstrap success/failure paths.
+- Updated SettingsController save path to apply prefs live to AudioManager.
+- Verified compile via headless loop and Editor.log signal tail.
+
+Files written/updated
+- Assets/_Game/Scripts/AudioManager.cs
+- Assets/_Game/Scripts/HapticsManager.cs
+- Assets/_Game/Scripts/GameSceneController.cs
+- Assets/_Game/Scripts/CoreLoopBootstrap.cs
+- Assets/_Game/Scripts/SettingsController.cs
+- tasks/T011-settings-persistence.md
+- tasks/BOARD.md
+- docs/run-log.md
+
+Verification/evidence
+- scripts/unity-check.sh -> CLEAN
+- Editor.log tail shows latest `Tundra build success`.
+
+Result
+- PASS: settings persistence + audio/haptics integration complete for M2 baseline.

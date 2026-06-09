@@ -58,6 +58,8 @@ namespace Pully.Game
             if (success)
             {
                 _score.RegisterHit(target.rule.baseReward);
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayHit();
+                HapticsManager.Hit();
             }
             else
             {
@@ -65,6 +67,8 @@ namespace Pully.Game
                 {
                     target.RestoreToSpawn();
                 }
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayMiss();
+                HapticsManager.Miss();
                 OnFailure();
             }
 
@@ -77,6 +81,8 @@ namespace Pully.Game
         private void OnFailure()
         {
             _score.RegisterMiss();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayMiss();
+            HapticsManager.Miss();
             if (_score.Lives <= 0)
             {
                 _state.SetState(GameState.GAME_OVER);
