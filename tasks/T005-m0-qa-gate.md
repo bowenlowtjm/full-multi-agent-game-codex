@@ -1,7 +1,7 @@
 ---
 id: T005
 title: QA gate for M0 scaffold (compile/tests/ci preflight)
-status: todo
+status: done
 milestone: M0
 owner: qa
 depends_on: [T001, T002]

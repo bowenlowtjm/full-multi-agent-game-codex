@@ -15,7 +15,8 @@ One-file-per-task (not a single shared board) is deliberate: parallel role workt
 | T002 | PM backlog and milestone decomposition from AGENT-BRIEF+PRD | done | M0 | game-pm | feature/T002-pm-backlog |
 | T003 | Core loop foundations (state, spawning, gesture, scoring) | done | M1 | game-logic | feature/T003-core-loop |
 | T004 | Scene + bootstrap flow (menu/game/pause/gameover wiring) | done | M1 | unity-scene | feature/T004-scene-flow |
-| T005 | QA gate for M0 scaffold (compile/tests/ci preflight) | todo | M0 | qa | chore/T005-m0-qa |
+| T005 | QA gate for M0 scaffold (compile/tests/ci preflight) | done | M0 | qa | chore/T005-m0-qa |
+| T009 | Full screen flow implementation (splash/how-to/menu/settings/game/pause/game-over/menu) | done | M2 | unity-scene | feature/T009-screen-flow |
 
 ## How to use
 - **Create a task:** copy `TEMPLATE.md` → `T###-slug.md`, fill the frontmatter, add a row here.

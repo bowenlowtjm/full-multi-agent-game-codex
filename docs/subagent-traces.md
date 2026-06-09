@@ -103,3 +103,42 @@ Verification/evidence
 
 Result
 - PASS: T003/T004 completed and pushed.
+
+---
+
+## 2026-06-09 08:52–09:03 — unity-scene role execution trace (orchestrator-led)
+Goal
+- Deliver complete testable screen flow scenes and Build Settings wiring with minimal human intervention.
+
+Actions
+- Added scene controllers: SplashController, TutorialController, MenuController, SettingsController, GameSceneController, GameOverController.
+- Added scene constants/session bridge: SceneNames, SessionData.
+- Added editor automation: Assets/Editor/BuildTools.cs with `Pully/Generate Core Scenes` menu + batch entrypoint.
+- Ran batch scene generation via Unity executeMethod.
+- Fixed compile issue in SplashController (missing namespace closing brace) and reran generation.
+- Verified scene assets created and Build Settings populated.
+
+Files written/updated
+- Assets/Editor/BuildTools.cs
+- Assets/_Game/Scripts/SplashController.cs
+- Assets/_Game/Scripts/TutorialController.cs
+- Assets/_Game/Scripts/MenuController.cs
+- Assets/_Game/Scripts/SettingsController.cs
+- Assets/_Game/Scripts/GameSceneController.cs
+- Assets/_Game/Scripts/GameOverController.cs
+- Assets/_Game/Scripts/SceneNames.cs
+- Assets/_Game/Scripts/SessionData.cs
+- Assets/_Game/Scenes/*.unity (6 scenes generated)
+- ProjectSettings/EditorBuildSettings.asset
+- tasks/T009-screen-flow.md, tasks/BOARD.md
+- docs/run-log.md
+
+Verification/evidence
+- Batch log contained: `[BuildTools] Core scenes generated and Build Settings updated.`
+- Scene files present under `Assets/_Game/Scenes/`:
+  SplashScene, TutorialScene, MenuScene, SettingsScene, GameScene, GameOverScene.
+- Build Settings scene list has all 6 enabled scenes.
+- scripts/unity-check.sh -> CLEAN after changes.
+
+Result
+- PASS: full scene flow assets are now present and wired for testing/build.
