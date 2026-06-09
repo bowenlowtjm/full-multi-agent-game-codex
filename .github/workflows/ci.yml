@@ -69,7 +69,6 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: Android
           buildMethod: ''  # Just compile, don't build
-          customParameters: -quit -batchmode -nographics
 
   # Job 2: EditMode Tests
   test-editmode:
