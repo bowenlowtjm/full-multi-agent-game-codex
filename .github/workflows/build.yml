@@ -58,13 +58,8 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: Android
-          androidExportType: androidPackage    # .apk (use 'androidAppBundle' for .aab)
-          androidTargetSdkVersion: 34
-          androidAppBundle: false
+          androidExportType: androidPackage
           buildName: pully
-          buildMethod: ''  # Use GameCI default build method
-          customParameters: |
-            -development ${{ github.event.inputs.buildType == 'debug' && 'true' || 'false' }}
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
