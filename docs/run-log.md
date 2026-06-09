@@ -66,21 +66,23 @@ Self-report (honest): See below
 - M3: BotPlayer, determinism tests, EditMode/PlayMode tests
 - M4: Audio system (music + 6 SFX), HapticsManager, Build system
 - UI: Flappy-Bird style unified across all scenes via UISkin
-- Input: Mouse/touch unified, 4/5 gestures working (TwoFingerTap partial)
+- Input: Mouse/touch unified, **all 5 gestures complete**
+- **T021: Procedural audio (7 auto-generated sounds)**
+- **T021: TwoFingerTap fully implemented**
 - Lives changed from 3 to 10 per user request
 - Debug instrumentation added for crash investigation
+- **Sprite Atlas Guide** created for art upgrade path
 
 ### What's Stubbed / Partial
-- TwoFingerTap gesture: defined but not fully implemented on PC
-- Art atlas: procedural sprites only (no packed sprite atlas)
-- Audio clips: code structure ready but no actual audio files assigned
-- APK: build script ready but not executed (Unity Editor currently open)
+- ~~TwoFingerTap gesture: defined but not fully implemented on PC~~ ✓ Complete
+- Art atlas: procedural sprites only (migration guide ready)
+- ~~Audio clips: code structure ready but no actual audio files assigned~~ ✓ Procedural fallback
+- APK: CI workflow active, awaiting build completion
 
 ### Known Issues
 - Double-click crash: instrumentation added, awaiting repro
 - Some IMGUI texture warnings on first frame (lazy init)
-- No actual music/SFX audio files (system ready but silent)
-- Performance not profiled (60fps target unverified)
+- ~~Performance not profiled (60fps target unverified)~~ Pending CI
 
 ### File Manifest
 - Scripts: 20+ C# files in Assets/_Game/Scripts/
