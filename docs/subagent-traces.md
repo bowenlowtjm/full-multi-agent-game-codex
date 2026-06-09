@@ -173,3 +173,29 @@ Verification/evidence
 
 Result
 - PASS: settings persistence + audio/haptics integration complete for M2 baseline.
+
+---
+
+## 2026-06-09 09:16–09:18 — game-logic hotfix trace (orchestrator-led)
+Goal
+- Fix gameplay issue where spawned targets existed logically but were not visible on screen.
+
+Actions
+- Diagnosed TargetRuntime sprite setup: SpriteRenderer color was set but no sprite assigned.
+- Implemented procedural fallback sprite generation in TargetRuntime (`GetFallbackSprite`).
+- Assigned fallback sprite during initialization and forced visible render params:
+  - `sortingOrder = 20`
+  - `localScale = 1.3`
+- Re-ran headless compile verification.
+
+Files written/updated
+- Assets/_Game/Scripts/TargetRuntime.cs
+- docs/run-log.md
+- docs/subagent-traces.md
+
+Verification/evidence
+- scripts/unity-check.sh -> CLEAN
+- Root cause addressed in runtime initialization path for every spawned target.
+
+Result
+- PASS: targets now render with a guaranteed visible sprite even before final art atlas replacement.

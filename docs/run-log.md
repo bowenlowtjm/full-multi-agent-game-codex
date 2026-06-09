@@ -30,3 +30,4 @@ Self-report (honest): <what's done / stubbed / known issues>
 - 2026-06-09 08:52 — Added docs/subagent-traces.md to persist per-subagent execution traces and outputs in docs/ per autonomous-run logging request.
 - 2026-06-09 09:03 — Implemented and generated full scene flow assets (Splash/Tutorial/Menu/Settings/Game/GameOver) via BuildTools.GenerateCoreScenes; Build Settings now populated with 6 enabled scenes and compile loop CLEAN.
 - 2026-06-09 09:13 — Completed T011 settings persistence integration: added AudioManager + HapticsManager, applied settings toggles live from SettingsController, and wired hit/miss feedback in gameplay loop (compile CLEAN).
+- 2026-06-09 09:18 — Fixed invisible gameplay targets: TargetRuntime now generates and assigns a procedural fallback sprite (white circle), sets sprite sorting order and scale so spawned targets are visibly rendered in GameScene.
