@@ -8,6 +8,7 @@ name: CI (Tests)
 #
 # Optional secrets:
 #   UNITY_VERSION - override Unity version (default: from ProjectVersion.txt)
+#   DISCORD_WEBHOOK_URL - post CI result updates to Discord (#hermes-updates)
 
 on:
   push:
@@ -162,11 +163,83 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-editmode, test-playmode]
     if: always()
+    outputs:
+      status: ${{ steps.eval.outputs.status }}
     steps:
-      - name: Check Results
+      - name: Evaluate CI status
+        id: eval
         run: |
           if [[ "${{ needs.test-editmode.result }}" == "failure" ]] || [[ "${{ needs.test-playmode.result }}" == "failure" ]]; then
+            echo "status=failure" >> "$GITHUB_OUTPUT"
             echo "::error::Tests failed! Check individual job logs."
             exit 1
+          elif [[ "${{ needs.test-editmode.result }}" == "cancelled" ]] || [[ "${{ needs.test-playmode.result }}" == "cancelled" ]]; then
+            echo "status=cancelled" >> "$GITHUB_OUTPUT"
+            echo "CI checks were cancelled."
+          else
+            echo "status=success" >> "$GITHUB_OUTPUT"
+            echo "All tests passed!"
           fi
-          echo "All tests passed!"
+
+  # Job 6: Discord notification for tracked agent updates channel
+  discord-notify:
+    name: Discord Notify
+    runs-on: ubuntu-latest
+    needs: [test-editmode, test-playmode, test-summary]
+    if: always() && secrets.DISCORD_WEBHOOK_URL != ''
+    steps:
+      - name: Post CI status to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          EDITMODE_RESULT: ${{ needs.test-editmode.result }}
+          PLAYMODE_RESULT: ${{ needs.test-playmode.result }}
+          SUMMARY_RESULT: ${{ needs.test-summary.outputs.status }}
+        run: |
+          STATUS="${SUMMARY_RESULT:-failure}"
+          case "$STATUS" in
+            success)
+              COLOR=5763719
+              ICON="✅"
+              ;;
+            cancelled)
+              COLOR=9807270
+              ICON="⚪"
+              ;;
+            *)
+              COLOR=15548997
+              ICON="❌"
+              ;;
+          esac
+
+          SHORT_SHA="${COMMIT::7}"
+
+          cat > /tmp/discord-payload.json <<JSON
+          {
+            "embeds": [
+              {
+                "title": "${ICON} CI (Tests): ${STATUS}",
+                "color": ${COLOR},
+                "fields": [
+                  {"name": "Repository", "value": "${REPO}", "inline": true},
+                  {"name": "Branch", "value": "${BRANCH}", "inline": true},
+                  {"name": "Commit", "value": "${SHORT_SHA}", "inline": true},
+                  {"name": "EditMode", "value": "${EDITMODE_RESULT}", "inline": true},
+                  {"name": "PlayMode", "value": "${PLAYMODE_RESULT}", "inline": true},
+                  {"name": "Actor", "value": "${ACTOR}", "inline": true},
+                  {"name": "Run", "value": "[View workflow run](${RUN_URL})", "inline": false}
+                ],
+                "footer": {"text": "Workflow #${RUN_NUMBER}"}
+              }
+            ]
+          }
+          JSON
+
+          curl -sS -X POST "$WEBHOOK" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/discord-payload.json
