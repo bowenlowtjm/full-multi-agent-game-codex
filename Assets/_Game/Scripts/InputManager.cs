@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Pully.Game
@@ -7,6 +8,7 @@ namespace Pully.Game
     {
         [SerializeField] private float dragThreshold = 10f;
         [SerializeField] private float doubleTapInterval = 0.3f;
+        [SerializeField] private float twoFingerTapWindow = 0.1f; // Fingers must touch within this time
 
         private readonly Dictionary<int, TouchData> _activeTouches = new();
         private readonly Dictionary<int, float> _lastTapTimes = new();
@@ -16,6 +18,10 @@ namespace Pully.Game
         private Camera _camera;
         private SpawnerManager _spawner;
         private GameStateManager _state;
+
+        // Two-finger tap tracking
+        private float _firstFingerDownTime;
+        private bool _twoFingerTapPending;
 
         public void Configure(SpawnerManager spawner, GameStateManager state)
         {
@@ -41,10 +47,7 @@ namespace Pully.Game
             {
                 if (Input.touchCount > 0)
                 {
-                    for (int i = 0; i < Input.touchCount; i++)
-                    {
-                        ProcessTouch(Input.GetTouch(i));
-                    }
+                    ProcessTouchInput();
                 }
                 else
                 {
@@ -55,6 +58,75 @@ namespace Pully.Game
             {
                 Debug.LogError($"[InputManager] Exception in Update: {ex}");
             }
+        }
+
+        private void ProcessTouchInput()
+        {
+            // Check for two-finger tap
+            if (Input.touchCount == 2)
+            {
+                var touch0 = Input.GetTouch(0);
+                var touch1 = Input.GetTouch(1);
+
+                if (touch0.phase == TouchPhase.Began && touch1.phase == TouchPhase.Began)
+                {
+                    // Both fingers touched down simultaneously
+                    _twoFingerTapPending = true;
+                    _firstFingerDownTime = Time.time;
+                    
+                    var target0 = RaycastTarget(touch0.position);
+                    var target1 = RaycastTarget(touch1.position);
+                    
+                    // Use the target that was hit (prefer the one requiring TwoFingerTap)
+                    TargetRuntime target = SelectTargetForGesture(target0, target1, RulesetDefinition.Gesture.TwoFingerTap);
+                    
+                    if (target != null)
+                    {
+                        _activeTouches[touch0.fingerId] = CreateTouchData(touch0.fingerId, touch0.position, target, true);
+                        _activeTouches[touch1.fingerId] = CreateTouchData(touch1.fingerId, touch1.position, target, true);
+                        Debug.Log($"[InputManager] TwoFingerTap began target={target.name}");
+                    }
+                    return;
+                }
+            }
+
+            // Process all touches
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                ProcessTouch(Input.GetTouch(i));
+            }
+        }
+
+        private TouchData CreateTouchData(int fingerId, Vector2 pos, TargetRuntime target, bool isTwoFinger)
+        {
+            return new TouchData
+            {
+                fingerId = fingerId,
+                startPos = pos,
+                currentPos = pos,
+                startTime = Time.time,
+                target = target,
+                isDragging = false,
+                isDoubleTap = false,
+                isTwoFingerTap = isTwoFinger
+            };
+        }
+
+        private TargetRuntime SelectTargetForGesture(TargetRuntime a, TargetRuntime b, RulesetDefinition.Gesture gesture)
+        {
+            if (a != null && b == null) return a;
+            if (a == null && b != null) return b;
+            if (a == null && b == null) return null;
+            
+            // Both exist - prefer the one requiring this gesture
+            bool aNeedsGesture = a.rule.requiredGesture == gesture;
+            bool bNeedsGesture = b.rule.requiredGesture == gesture;
+            
+            if (aNeedsGesture && !bNeedsGesture) return a;
+            if (!aNeedsGesture && bNeedsGesture) return b;
+            
+            // Both or neither need it - return first
+            return a;
         }
 
         private void ProcessTouch(Touch touch)
@@ -80,9 +152,49 @@ namespace Pully.Game
         {
             Vector2 pos = Input.mousePosition;
             const int id = 0;
-            if (Input.GetMouseButtonDown(0)) OnTouchBegan(id, pos);
-            else if (Input.GetMouseButton(0)) OnTouchMoved(id, pos);
-            else if (Input.GetMouseButtonUp(0)) OnTouchEnded(id, pos);
+            
+            // PC simulation of two-finger tap: Shift+Click or Right Click
+            bool simulatingTwoFinger = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetMouseButton(1);
+            
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (simulatingTwoFinger)
+                {
+                    OnTwoFingerBegan(pos);
+                }
+                else
+                {
+                    OnTouchBegan(id, pos);
+                }
+            }
+            else if (Input.GetMouseButton(0))
+            {
+                OnTouchMoved(id, pos);
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                OnTouchEnded(id, pos);
+            }
+        }
+
+        private void OnTwoFingerBegan(Vector2 screenPos)
+        {
+            var target = RaycastTarget(screenPos);
+            if (target == null) return;
+            
+            _activeTouches[0] = new TouchData
+            {
+                fingerId = 0,
+                startPos = screenPos,
+                currentPos = screenPos,
+                startTime = Time.time,
+                target = target,
+                isDragging = false,
+                isDoubleTap = false,
+                isTwoFingerTap = true
+            };
+            
+            Debug.Log($"[InputManager] TwoFingerTap (simulated) began target={target.name}");
         }
 
         private void OnTouchBegan(int fingerId, Vector2 screenPos)
@@ -109,7 +221,8 @@ namespace Pully.Game
                 startTime = Time.time,
                 target = target,
                 isDragging = false,
-                isDoubleTap = isDoubleTap
+                isDoubleTap = isDoubleTap,
+                isTwoFingerTap = false
             };
 
             Debug.Log($"[InputManager] Began id={fingerId} target={(target ? target.name : "null")} double={isDoubleTap} pos={screenPos}");
@@ -162,6 +275,15 @@ namespace Pully.Game
             var duration = Time.time - data.startTime;
             var moved = Vector2.Distance(data.startPos, screenPos);
 
+            // Two-finger tap takes priority
+            if (data.isTwoFingerTap)
+            {
+                Debug.Log($"[InputManager] End id={fingerId} TWOFINGER target={data.target.name}");
+                _spawner.TryResolve(data.target, GestureType.TwoFingerTap);
+                _twoFingerTapPending = false;
+                return;
+            }
+
             if (data.isDoubleTap)
             {
                 bool needsDouble = (RulesetDefinition.Gesture)GestureType.DoubleTap == data.target.rule.requiredGesture;
@@ -203,6 +325,7 @@ namespace Pully.Game
             public TargetRuntime target;
             public bool isDragging;
             public bool isDoubleTap;
+            public bool isTwoFingerTap;
         }
     }
 }

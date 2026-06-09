@@ -70,7 +70,20 @@ namespace Pully.Game
 
         private void Start()
         {
+            GenerateProceduralClipsIfNeeded();
             PlayMusic();
+        }
+
+        private void GenerateProceduralClipsIfNeeded()
+        {
+            // Generate procedural clips if no audio files assigned
+            if (hitSfx == null) hitSfx = ProceduralAudio.GenerateHitClip();
+            if (missSfx == null) missSfx = ProceduralAudio.GenerateMissClip();
+            if (comboSfx == null) comboSfx = ProceduralAudio.GenerateComboClip();
+            if (gameOverSfx == null) gameOverSfx = ProceduralAudio.GenerateGameOverClip();
+            if (uiClickSfx == null) uiClickSfx = ProceduralAudio.GenerateUIClickClip();
+            if (highScoreSfx == null) highScoreSfx = ProceduralAudio.GenerateHighScoreClip();
+            if (musicLoop == null) musicLoop = ProceduralAudio.GenerateMusicLoop();
         }
 
         private void LoadSettings()
