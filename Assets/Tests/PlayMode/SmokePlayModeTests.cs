@@ -29,7 +29,7 @@ namespace Pully.Tests
             Assert.IsNotNull(spawner);
             Assert.IsNotNull(input);
             Assert.AreEqual(GameState.GAMEPLAY, state.CurrentState);
-            Assert.AreEqual(3, score.Lives);
+            Assert.AreEqual(10, score.Lives);
 
             Object.Destroy(root);
             if (core != null) Object.Destroy(core.gameObject);

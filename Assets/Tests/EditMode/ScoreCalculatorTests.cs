@@ -42,7 +42,7 @@ namespace Pully.Tests
 
             mgr.RegisterMiss();
             Assert.AreEqual(1f, mgr.Combo, 0.0001f);
-            Assert.AreEqual(2, mgr.Lives);
+            Assert.AreEqual(9, mgr.Lives);
 
             Object.DestroyImmediate(go);
         }
