@@ -1,0 +1,109 @@
+name: CI (Tests) - Simple
+
+# Simplified CI workflow that skips Unity-dependent steps.
+# Use this until Unity license is activated.
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-simple-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Project Files
+        run: |
+          echo "## Project Structure Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check for required directories
+          if [ -d "Assets/_Game/Scripts" ]; then
+            echo "- ✅ Scripts directory exists" >> $GITHUB_STEP_SUMMARY
+            SCRIPT_COUNT=$(find Assets/_Game/Scripts -name "*.cs" | wc -l)
+            echo "- 📄 Found $SCRIPT_COUNT C# files" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Scripts directory missing" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          if [ -d "Assets/_Game/Scenes" ]; then
+            echo "- ✅ Scenes directory exists" >> $GITHUB_STEP_SUMMARY
+            SCENE_COUNT=$(find Assets/_Game/Scenes -name "*.unity" | wc -l)
+            echo "- 🎬 Found $SCENE_COUNT scenes" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Scenes directory missing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -d "Assets/Tests" ]; then
+            echo "- ✅ Tests directory exists" >> $GITHUB_STEP_SUMMARY
+            TEST_COUNT=$(find Assets/Tests -name "*.cs" | wc -l)
+            echo "- 🧪 Found $TEST_COUNT test files" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Tests directory missing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Unity version from ProjectSettings:" >> $GITHUB_STEP_SUMMARY
+          grep "m_EditorVersion:" ProjectSettings/ProjectVersion.txt | head -1 >> $GITHUB_STEP_SUMMARY
+
+      - name: Validate C# Syntax
+        run: |
+          echo "## C# Syntax Validation" >> $GITHUB_STEP_SUMMARY
+
+          # Check for basic syntax issues
+          SYNTAX_ERRORS=0
+
+          # Check for mismatched braces in key files
+          for file in Assets/_Game/Scripts/*.cs; do
+            if [ -f "$file" ]; then
+              OPEN_BRACES=$(grep -o '{' "$file" | wc -l)
+              CLOSE_BRACES=$(grep -o '}' "$file" | wc -l)
+              if [ "$OPEN_BRACES" -ne "$CLOSE_BRACES" ]; then
+                echo "- ⚠️ Possible brace mismatch in $(basename $file)" >> $GITHUB_STEP_SUMMARY
+                SYNTAX_ERRORS=$((SYNTAX_ERRORS + 1))
+              fi
+            fi
+          done
+
+          if [ $SYNTAX_ERRORS -eq 0 ]; then
+            echo "- ✅ No obvious syntax issues detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check Workflow Files
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Workflow Validation" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f ".github/workflows/ci.yml" ]; then
+            echo "- ✅ ci.yml exists" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ ci.yml missing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f ".github/workflows/build.yml" ]; then
+            echo "- ✅ build.yml exists" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ build.yml missing" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **Unity License Required**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To enable full CI with Unity tests:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go to repo Settings > Secrets > Actions" >> $GITHUB_STEP_SUMMARY
+          echo "2. Add UNITY_EMAIL and UNITY_PASSWORD secrets" >> $GITHUB_STEP_SUMMARY
+          echo "3. Run the 'Activate Unity License' workflow" >> $GITHUB_STEP_SUMMARY
+          echo "4. Add the generated UNITY_LICENSE secret" >> $GITHUB_STEP_SUMMARY

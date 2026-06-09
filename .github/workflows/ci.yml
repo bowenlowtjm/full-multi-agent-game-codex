@@ -40,7 +40,7 @@ env:
   PROJECT_PATH: .
 
 jobs:
-  # Job 1: Compile validation (fast fail)
+  # Job 1: Compile validation (fast fail) - Linux is faster than Android
   compile-check:
     name: Compile Validation
     runs-on: ubuntu-latest
@@ -60,15 +60,16 @@ jobs:
             Library-compile-
 
       - name: Validate Compilation
-        uses: game-ci/unity-builder@v4
+        uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
-          targetPlatform: Android
-          buildMethod: ''  # Just compile, don't build
+          testMode: editmode
+          checkCompilation: true
+          artifactsPath: test-results/compile
 
   # Job 2: EditMode Tests
   test-editmode:
