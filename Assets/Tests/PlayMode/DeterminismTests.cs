@@ -95,9 +95,13 @@ namespace Pully.Tests
                 baseReward = 10
             });
 
+            // Create a GameStateManager
+            var stateGO = new GameObject("StateManager");
+            var stateManager = stateGO.AddComponent<GameStateManager>();
+
             // Inject ruleset (via reflection or make Configure public)
             var spawner = go.AddComponent<SpawnerManager>();
-            spawner.Configure(ruleset, null);
+            spawner.Configure(ruleset, null, stateManager);
 
             return go;
         }
