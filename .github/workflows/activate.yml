@@ -1,0 +1,27 @@
+name: Activate Unity License
+
+# Run this workflow once to activate your Unity license.
+# After activation, the CI/CD workflows will work.
+#
+# Required secrets:
+#   UNITY_EMAIL     - Your Unity account email
+#   UNITY_PASSWORD  - Your Unity account password
+#
+# For personal/free licenses, this will generate the UNITY_LICENSE secret content.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  activate:
+    name: Activate Unity License
+    runs-on: ubuntu-latest
+    steps:
+      - name: Activate Unity
+        uses: game-ci/unity-request-activation-file@v2
+
+      - name: Upload Activation File
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-activation-file
+          path: *.alf
