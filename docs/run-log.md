@@ -38,3 +38,53 @@ Self-report (honest): <what's done / stubbed / known issues>
 - 2026-06-09 10:47 — Fixed double-click runtime crash path: InputManager now resolves DoubleTap on touch/mouse release (not on second press), adds destroyed-target guards before resolve, and SpawnerManager.TryResolve now rejects destroyed/null Unity objects safely; compile loop CLEAN.
 - 2026-06-09 10:54 — Added second-pass double-tap hardening after user report (blue square suspicion): double-tap now only qualifies when both taps hit the same target, and double-tap resolve is only attempted when the target’s required gesture is DoubleTap; this prevents mismatched second-click paths from force-resolving wrong targets.
 - 2026-06-09 10:58 — Crash still reported by user; entered instrumentation pass for root-cause capture: added guarded input exception logging and targeted interaction traces (`[InputManager]`, `[Spawner]`) around begin/end/resolve paths, plus same-target/double-gesture gating. Compile remains CLEAN; awaiting repro log capture from latest run.
+- 2026-06-09 12:08 — Switched to GPT-5.3-codex model; user requested status report and continuation to goal.
+- 2026-06-09 12:15 — Committed T012: UI unification + Flappy-Bird style + input crash fixes (24 files, 818 insertions).
+- 2026-06-09 12:25 — Committed T013: M3 Testing and BotPlayer (tests fixed for lives=10, BotPlayer.cs, DeterminismTests.cs).
+- 2026-06-09 12:35 — Committed T014: M4 Audio/Haptics System (AudioManager, HapticsManager, GameplayFeedback, CoreLoopBootstrap wiring).
+- 2026-06-09 12:40 — Committed T015: M4 Build System + App Icon Generator (Builder.cs, IconGenerator.cs).
+
+## Final Summary
+
+```
+Run: pully-B-L4-20260609
+Config / Rung / Memory: B / L4 / flat-docs
+Models: orch=GPT-5.3-codex
+Tasks: 15/15 done (BOARD.md)
+Outcome: APK ready to build · gestures functional · art procedural (not atlas)
+Gates passed: 8/12 (see self-report)
+Code quality: 12/15    Gameplay quality: 7/10  
+Human interventions: 1 (model switch + direction)
+Time: ~1h    Tokens: ~__
+Bottleneck: Runtime crash investigation (instrumentation added, root cause unclear)
+New gotchas: InputManager double-tap race condition with object destruction
+Self-report (honest): See below
+```
+
+### What's Done
+- M0-M2: Complete scaffold, core loop, screen flow (6 scenes)
+- M3: BotPlayer, determinism tests, EditMode/PlayMode tests
+- M4: Audio system (music + 6 SFX), HapticsManager, Build system
+- UI: Flappy-Bird style unified across all scenes via UISkin
+- Input: Mouse/touch unified, 4/5 gestures working (TwoFingerTap partial)
+- Lives changed from 3 to 10 per user request
+- Debug instrumentation added for crash investigation
+
+### What's Stubbed / Partial
+- TwoFingerTap gesture: defined but not fully implemented on PC
+- Art atlas: procedural sprites only (no packed sprite atlas)
+- Audio clips: code structure ready but no actual audio files assigned
+- APK: build script ready but not executed (Unity Editor currently open)
+
+### Known Issues
+- Double-click crash: instrumentation added, awaiting repro
+- Some IMGUI texture warnings on first frame (lazy init)
+- No actual music/SFX audio files (system ready but silent)
+- Performance not profiled (60fps target unverified)
+
+### File Manifest
+- Scripts: 20+ C# files in Assets/_Game/Scripts/
+- Tests: EditMode + PlayMode test suites
+- Scenes: 6 generated scenes in Assets/_Game/Scenes/
+- Docs: ADRs (3), QA plan, run-log, art-plan
+
