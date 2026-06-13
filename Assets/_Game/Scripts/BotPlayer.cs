@@ -144,38 +144,78 @@ namespace Pully.Game
 
         private IEnumerator ExecuteCorrectGesture(TargetRuntime target, RulesetDefinition.Gesture gesture)
         {
-            Vector2 screenPos = _camera.WorldToScreenPoint(target.transform.position);
-            
-            switch (gesture)
+            if (_spawner == null || target == null || target.gameObject == null) yield break;
+
+            // Use direct resolver for deterministic CI smoke loops.
+            var mappedGesture = MapGesture(gesture);
+            bool success = _spawner.TryResolve(target, mappedGesture);
+
+            if (success)
             {
-                case RulesetDefinition.Gesture.SingleTap:
-                    yield return SimulateTap(screenPos);
-                    break;
-                case RulesetDefinition.Gesture.DoubleTap:
-                    yield return SimulateDoubleTap(screenPos);
-                    break;
-                case RulesetDefinition.Gesture.LongPress:
-                    yield return SimulateLongPress(screenPos);
-                    break;
-                case RulesetDefinition.Gesture.SwipeTap:
-                    yield return SimulateSwipe(screenPos);
-                    break;
-                case RulesetDefinition.Gesture.TwoFingerTap:
-                    yield return SimulateTwoFingerTap(screenPos);
-                    break;
+                CorrectActions++;
+            }
+            else
+            {
+                Misses++;
             }
 
-            CorrectActions++;
-            LogAction(target, gesture.ToString(), true);
+            LogAction(target, gesture.ToString(), success);
+            yield return null;
         }
 
         private IEnumerator ExecuteWrongGesture(TargetRuntime target)
         {
-            Vector2 screenPos = _camera.WorldToScreenPoint(target.transform.position);
-            // Perform a random wrong gesture
-            yield return SimulateTap(screenPos);
-            Misses++;
-            LogAction(target, "WrongGesture", false);
+            if (_spawner == null || target == null || target.gameObject == null) yield break;
+
+            // Pick an intentionally wrong gesture if possible.
+            var required = MapGesture(target.rule.requiredGesture);
+            var wrong = GetWrongGesture(required);
+            bool success = _spawner.TryResolve(target, wrong);
+
+            if (success)
+            {
+                CorrectActions++;
+            }
+            else
+            {
+                Misses++;
+            }
+
+            LogAction(target, "WrongGesture", success);
+            yield return null;
+        }
+
+        private static GestureType MapGesture(RulesetDefinition.Gesture gesture)
+        {
+            return gesture switch
+            {
+                RulesetDefinition.Gesture.SingleTap => GestureType.SingleTap,
+                RulesetDefinition.Gesture.DoubleTap => GestureType.DoubleTap,
+                RulesetDefinition.Gesture.LongPress => GestureType.LongPress,
+                RulesetDefinition.Gesture.SwipeTap => GestureType.SwipeTap,
+                RulesetDefinition.Gesture.TwoFingerTap => GestureType.TwoFingerTap,
+                _ => GestureType.SingleTap
+            };
+        }
+
+        private static GestureType GetWrongGesture(GestureType required)
+        {
+            // Deterministic fallback order; return first gesture that differs from required.
+            var options = new[]
+            {
+                GestureType.SingleTap,
+                GestureType.DoubleTap,
+                GestureType.LongPress,
+                GestureType.SwipeTap,
+                GestureType.TwoFingerTap
+            };
+
+            foreach (var candidate in options)
+            {
+                if (candidate != required) return candidate;
+            }
+
+            return GestureType.SingleTap;
         }
 
         private IEnumerator SimulateTap(Vector2 screenPos)
