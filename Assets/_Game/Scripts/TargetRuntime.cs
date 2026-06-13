@@ -11,6 +11,7 @@ namespace Pully.Game
 
         public RulesetDefinition.TargetRule rule;
         public float remainingLifetime;
+        public float RemainingLifetime => remainingLifetime;
         public Vector3 spawnPosition;
 
         public event Action<TargetRuntime> OnExpired;

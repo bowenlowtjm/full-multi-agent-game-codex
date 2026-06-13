@@ -9,13 +9,103 @@ namespace Pully.Tests
 {
     public class BotSmokePlayModeTests
     {
-        [UnityTest]
-        public IEnumerator BotSmoke_PlayMode_RunsActions_AndScores()
+        private class RoundResult
         {
+            public int score;
+            public int lives;
+            public int misses;
+            public BotPlayer bot;
+        }
+
+        [UnityTest]
+        public IEnumerator BotSmoke_InputMode_UsesRecognizerPath_AndScores()
+        {
+            var result = new RoundResult();
+            yield return RunBotRound(
+                seed: 12345,
+                accuracy: 1.0f,
+                mode: BotPlayer.BotInputMode.Input,
+                minActions: 2,
+                requireScoreIncrease: true,
+                requireMisses: false,
+                requireInputEvents: true,
+                requireNoDirectResolve: true,
+                result: result);
+
+            Assert.Greater(result.score, 0, $"Input mode should score via recognizer path. {result.bot.GetReport()}");
+            Assert.AreEqual(0, result.misses, $"All-correct run should have no misses. {result.bot.GetReport()}");
+        }
+
+        [UnityTest]
+        public IEnumerator BotSmoke_InputMode_WrongGesture_CausesMissPenalty()
+        {
+            var result = new RoundResult();
+            yield return RunBotRound(
+                seed: 54321,
+                accuracy: 0.0f,
+                mode: BotPlayer.BotInputMode.Input,
+                minActions: 1,
+                requireScoreIncrease: false,
+                requireMisses: true,
+                requireInputEvents: true,
+                requireNoDirectResolve: true,
+                result: result);
+
+            Assert.Greater(result.misses, 0, $"Expected at least one miss from wrong injected gestures. {result.bot.GetReport()}");
+            Assert.Less(result.lives, 10, $"Expected life penalty from wrong gesture recognizer result. {result.bot.GetReport()}");
+            Assert.AreEqual(0, result.bot.DirectResolveCalls, "Input mode must not call direct resolver.");
+        }
+
+        [UnityTest]
+        public IEnumerator BotSmoke_InputMode_Deterministic_SeededRunsMatch()
+        {
+            var resultA = new RoundResult();
+            yield return RunBotRound(
+                seed: 777,
+                accuracy: 1.0f,
+                mode: BotPlayer.BotInputMode.Input,
+                minActions: 4,
+                requireScoreIncrease: true,
+                requireMisses: false,
+                requireInputEvents: true,
+                requireNoDirectResolve: true,
+                result: resultA);
+
+            var resultB = new RoundResult();
+            yield return RunBotRound(
+                seed: 777,
+                accuracy: 1.0f,
+                mode: BotPlayer.BotInputMode.Input,
+                minActions: 4,
+                requireScoreIncrease: true,
+                requireMisses: false,
+                requireInputEvents: true,
+                requireNoDirectResolve: true,
+                result: resultB);
+
+            Debug.Log($"[BotDeterminism] scoreA={resultA.score} scoreB={resultB.score}");
+            Assert.AreEqual(resultA.score, resultB.score, $"Seeded input runs diverged. A={resultA.bot.GetReport()} B={resultB.bot.GetReport()}");
+        }
+
+        private static IEnumerator RunBotRound(
+            int seed,
+            float accuracy,
+            BotPlayer.BotInputMode mode,
+            int minActions,
+            bool requireScoreIncrease,
+            bool requireMisses,
+            bool requireInputEvents,
+            bool requireNoDirectResolve,
+            RoundResult result)
+        {
+            result.score = 0;
+            result.lives = 0;
+            result.misses = 0;
+            result.bot = null;
+
             var root = new GameObject("BotSmokeBootstrapRoot");
             root.AddComponent<MenuBootstrap>();
 
-            // Allow bootstrap/start coroutines to construct systems.
             yield return null;
             yield return null;
 
@@ -41,28 +131,34 @@ namespace Pully.Tests
                 yield return null;
             }
 
-            Assert.IsNotNull(core, "CoreLoopBootstrap was not created by MenuBootstrap.");
-            Assert.IsNotNull(spawner, "SpawnerManager was not created by bootstrap.");
-            Assert.IsNotNull(score, "ScoreManager was not created by bootstrap.");
-            Assert.IsNotNull(state, "GameStateManager was not created by bootstrap.");
-            Assert.AreEqual(GameState.GAMEPLAY, state.CurrentState, "Game did not reach GAMEPLAY state.");
+            Assert.IsNotNull(core, "CoreLoopBootstrap missing.");
+            Assert.IsNotNull(spawner, "SpawnerManager missing.");
+            Assert.IsNotNull(score, "ScoreManager missing.");
+            Assert.IsNotNull(state, "GameStateManager missing.");
+            Assert.AreEqual(GameState.GAMEPLAY, state.CurrentState, "Game did not reach GAMEPLAY.");
 
-            var botGo = new GameObject("BotSmokePlayer");
-            var bot = botGo.AddComponent<BotPlayer>();
-            bot.Configure(spawner, score, state, seed: 12345);
+            var botGo = new GameObject($"Bot_{mode}_{seed}");
+            result.bot = botGo.AddComponent<BotPlayer>();
+            result.bot.Configure(spawner, score, state, seed: seed, mode: mode);
 
-            // Tight deterministic smoke settings for CI speed/stability.
-            SetPrivateField(bot, "reactionTimeMin", 0.01f);
-            SetPrivateField(bot, "reactionTimeMax", 0.02f);
-            SetPrivateField(bot, "accuracyThreshold", 1.0f);
+            SetPrivateField(result.bot, "reactionTimeMin", 0.01f);
+            SetPrivateField(result.bot, "reactionTimeMax", 0.02f);
+            SetPrivateField(result.bot, "accuracyThreshold", accuracy);
 
-            bot.StartBotPlay();
+            int scoreBefore = score.Score;
+            int livesBefore = score.Lives;
 
-            const float runTimeout = 6f;
+            result.bot.StartBotPlay();
+
+            const float runTimeout = 8f;
             float runDeadline = Time.time + runTimeout;
             while (Time.time < runDeadline)
             {
-                if (bot.TotalActions >= 1 && score.Score > 0)
+                bool actionsReady = result.bot.TotalActions >= minActions;
+                bool scoreReady = !requireScoreIncrease || score.Score > scoreBefore;
+                bool missReady = !requireMisses || score.Lives < livesBefore;
+
+                if (actionsReady && scoreReady && missReady)
                 {
                     break;
                 }
@@ -70,20 +166,53 @@ namespace Pully.Tests
                 yield return null;
             }
 
-            bot.StopBotPlay();
+            result.bot.StopBotPlay();
 
-            Assert.GreaterOrEqual(bot.TotalActions, 1, $"Bot performed no actions. Report: {bot.GetReport()}");
-            Assert.Greater(score.Score, 0, $"Bot did not score points. Report: {bot.GetReport()}");
-            Assert.AreEqual(0, bot.Misses, $"Expected zero misses in deterministic smoke mode. Report: {bot.GetReport()}");
+            result.score = score.Score;
+            result.lives = score.Lives;
+            result.misses = result.bot.Misses;
 
-            Object.Destroy(root);
+            Assert.GreaterOrEqual(result.bot.TotalActions, minActions, $"Bot performed too few actions. {result.bot.GetReport()}");
+
+            if (requireScoreIncrease)
+            {
+                Assert.Greater(result.score, scoreBefore, $"Expected score increase. {result.bot.GetReport()}");
+            }
+
+            if (requireMisses)
+            {
+                Assert.Less(result.lives, livesBefore, $"Expected miss penalty (life loss). {result.bot.GetReport()}");
+                Assert.Greater(result.bot.Misses, 0, $"Expected bot miss count > 0. {result.bot.GetReport()}");
+            }
+
+            if (requireInputEvents)
+            {
+                Assert.Greater(result.bot.InputEventsQueued, 0, $"Expected queued input events in Input mode. {result.bot.GetReport()}");
+            }
+
+            if (requireNoDirectResolve)
+            {
+                Assert.AreEqual(0, result.bot.DirectResolveCalls, $"Input mode must not directly call resolver. {result.bot.GetReport()}");
+            }
+
+            Cleanup(root, botGo, core, spawner, score, state);
+            yield return null;
+        }
+
+        private static void Cleanup(GameObject root, GameObject botGo, CoreLoopBootstrap core, SpawnerManager spawner, ScoreManager score, GameStateManager state)
+        {
+            if (root != null) Object.Destroy(root);
             if (botGo != null) Object.Destroy(botGo);
             if (core != null) Object.Destroy(core.gameObject);
             if (spawner != null) Object.Destroy(spawner.gameObject);
             if (score != null) Object.Destroy(score.gameObject);
             if (state != null) Object.Destroy(state.gameObject);
 
-            yield return null;
+            var leftovers = Object.FindObjectsByType<TargetRuntime>(FindObjectsSortMode.None);
+            foreach (var target in leftovers)
+            {
+                if (target != null) Object.Destroy(target.gameObject);
+            }
         }
 
         private static void SetPrivateField(BotPlayer bot, string fieldName, float value)
